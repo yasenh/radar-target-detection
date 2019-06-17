@@ -36,7 +36,7 @@ The 2D CFAR is similar to 1D CFAR, but is implemented in both dimensions of the 
   >
   > - Training cells Tr = 12 and Td = 6, which correspond to range and Doppler dimension. 
   > - Similarly, Gr = 6 and Gd = 3 for Guard cells. 
-  > - And offset = 2 db.
+  > - And offset = 5 db.
 
 - Slide the Cell Under Test (CUT) across the complete matrix. Make sure the CUT has margin for Training and Guard cells from the edges.
 
@@ -45,13 +45,13 @@ The 2D CFAR is similar to 1D CFAR, but is implemented in both dimensions of the 
   > Step 1: Sum up the values from all Training, Guard Cells and CUT 
   >
   > ```matlab
-  > s1 = sum(RDM(i:i+2*Tr+2*Gr, j:j+2*Td+2*Gd),'all');
+  > s1 = sum(db2pow(RDM(i:i+2*Tr+2*Gr, j:j+2*Td+2*Gd)),'all');
   > ```
   >
   > Step 2: Sum up the values from all Guard Cells and CUT
   >
   > ```matlab
-  > s2 = sum(RDM(i+Tr:i+Tr+2*Gr, j+Td:j+Td+2*Gd),'all');
+  > s2 = sum(db2pow(RDM(i+Tr:i+Tr+2*Gr, j+Td:j+Td+2*Gd)),'all');
   > ```
   >
   > Step 3: Calculate noise level by subtract s2 from s1
@@ -81,6 +81,10 @@ The 2D CFAR is similar to 1D CFAR, but is implemented in both dimensions of the 
   > ```
 
 - Further add the offset to it to determine the threshold.
+
+  ```matlab
+  threshold = pow2db(threshold) + offset;
+  ```
 
 - Next, compare the signal under CUT against this threshold.
 
