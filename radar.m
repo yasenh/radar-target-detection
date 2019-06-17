@@ -138,7 +138,7 @@ sig_fft2 = fft2(Mix,Nr,Nd);
 sig_fft2 = sig_fft2(1:Nr/2,1:Nd);
 sig_fft2 = fftshift(sig_fft2);
 RDM = abs(sig_fft2);
-RDM = 10*log10(RDM) ;
+RDM = pow2db(RDM) ;
 
 %use the surf function to plot the output of 2DFFT and to show axis in both
 %dimensions
@@ -158,12 +158,12 @@ Td = 6;
 % *%TODO* :
 %Select the number of Guard Cells in both dimensions around the Cell under 
 %test (CUT) for accurate estimation
-Gr = 12;
-Gd = 6;
+Gr = 6;
+Gd = 3;
 
 % *%TODO* :
 % offset the threshold by SNR value in dB
-offset = 2;
+offset = 5;
 
 
 % *%TODO* :
@@ -199,18 +199,20 @@ for i = 1:(Nr/2 - (2*Gr+2*Tr))
     for j = 1:(Nd - (2*Gd+2*Td))
         % Now for each step, add the noise within all the training cells   
         % Taking the leading cell average here
-        noise_level = sum(RDM(i:i+2*Tr+2*Gr, j:j+2*Td+2*Gd),'all') - sum(RDM(i+Tr:i+Tr+2*Gr, j+Td:j+Td+2*Gd),'all');
+        s1 = sum(db2pow(RDM(i:i+2*Tr+2*Gr, j:j+2*Td+2*Gd)),'all');
+        s2 = sum(db2pow(RDM(i+Tr:i+Tr+2*Gr, j+Td:j+Td+2*Gd)),'all');    
+        noise_level = s1 - s2;
               
         % To determine the threshold, we take the average of summed noise
         % and multiply it with the offset        
         
-        threshold = (noise_level/num_cells);      
+        threshold = noise_level/num_cells;      
         threshold = pow2db(threshold) + offset;
         threshold = db2pow(threshold);
         
         % Now pick the cell under test which is the T+G cells away from the
         % first training cell and seasure the signal level
-        signal = RDM(i+Tr+Gr, j+Td+Gd);
+        signal = db2pow(RDM(i+Tr+Gr, j+Td+Gd));
         
         % If the signal level at Cell Under Test belows the threshold then
         % assign it to 0 value
